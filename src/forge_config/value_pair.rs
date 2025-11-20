@@ -1,17 +1,16 @@
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use crate::forge_config::node::{Node};
 use crate::forge_config::error::Error;
-use std::str::Lines;
 
 static DATATYPE_NAME_SEPARATOR: char = ':';
 static NAME_VALUE_SEPARATOR: char = '=';
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct ValuePair {
-  datatype: String,
-  name: String,
-  comments: Vec<String>,
-  value: String
+  pub(crate) datatype: String,
+  pub(crate) name: String,
+  pub(crate) comments: Vec<String>,
+  pub(crate) value: String
 }
 
 impl ValuePair {
@@ -42,16 +41,21 @@ impl ValuePair {
   }
 }
 
+impl Display for ValuePair {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}:{}={}", self.datatype, self.name,self.value)
+  }
+}
 impl Node for ValuePair {
   fn name(&self) -> &str {
     &self.name
   }
 
   fn comments(&self) -> &[String] {
-    &self.comments
+    self.comments.as_slice()
   }
 
-  fn export(&self, s: &mut String, indent: usize, skip_root: bool) {
+  fn export(&self, s: &mut String, indent: usize, _skip_root: bool) {
     let indent_string = " ".repeat(indent);
 
     for comment in &self.comments {
@@ -63,6 +67,7 @@ impl Node for ValuePair {
     s.push_str(indent_string.as_str());
 
     s.push_str(format!("{}:{}={}", self.datatype, self.name, self.value).as_str());
+    s.push('\n');
     s.push('\n');
   }
 }
