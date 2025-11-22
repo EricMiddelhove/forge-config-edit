@@ -20,7 +20,7 @@ impl ConfigFile {
     }
 
     pub(crate) fn export(&self) {
-        let mut s = String::new();
+        let mut s = String::from("# Modified with EricMiddelhove/forge-config-edit\n");
         self.tree.export(&mut s, 0, true);
         println!("{}", s);
     }
@@ -32,17 +32,12 @@ impl From<String> for ConfigFile {
     }
 }
 
-impl From<std::io::Lines<StdinLock<'_>>> for ConfigFile {
-    fn from(value: std::io::Lines<StdinLock<'_>>) -> Self {
+impl From<Box<dyn Iterator<Item=String>>> for ConfigFile {
+    fn from(value: Box<dyn Iterator<Item=String>>) -> Self {
 
         let mut value = value;
 
-        let str_vec = value
-          .map( |v| v
-            .unwrap()
-          );
-
-        let tree = Tree::new("root".to_string(), &mut str_vec.into_iter());
+        let tree = Tree::new("root".to_string(), &mut value);
 
         let tree = tree.unwrap();
 

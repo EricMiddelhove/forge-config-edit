@@ -11,23 +11,14 @@
     </cargoProject>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7ee57940-fff4-48fb-87d3-1f1750473ca5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/config_file/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/config_file/value_tree/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data_provider/data_provider.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data_provider/implementations/file_provider.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data_provider/implementations/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data_provider/implementations/stdin_provider.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data_provider/mod.rs" afterDir="false" />
+    <list default="true" id="7ee57940-fff4-48fb-87d3-1f1750473ca5" name="Changes" comment="found the better way lol">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/forge_config/array.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/array.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/forge_config/config_file.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/config_file.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/forge_config/error.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/error.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/forge_config/line_type.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/line_type.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/forge_config/mod.rs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/forge_config/node.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/node.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/forge_config/tree.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/tree.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/forge_config/value_pair.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/value_pair.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config_file/config_file.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/config_file.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config_file/value_tree/array.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/array.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config_file/value_tree/tree.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/tree.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/data_provider/data_provider.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/data_provider/data_provider.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/data_provider/implementations/file_provider.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/data_provider/implementations/file_provider.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/data_provider/implementations/stdin_provider.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/data_provider/implementations/stdin_provider.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -132,6 +123,31 @@
       <workItem from="1763242816566" duration="1164000" />
       <workItem from="1763247857034" duration="901000" />
     </task>
+    <task id="LOCAL-00001" summary="Prework for various data input methods">
+      <option name="closed" value="true" />
+      <created>1763816259415</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1763816259415</updated>
+    </task>
+    <task id="LOCAL-00002" summary="using more generic iterator in tree">
+      <option name="closed" value="true" />
+      <created>1763829538318</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1763829538318</updated>
+    </task>
+    <task id="LOCAL-00003" summary="found the better way lol">
+      <option name="closed" value="true" />
+      <created>1763829574240</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1763829574240</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -150,6 +166,12 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Prework for various data input methods" />
+    <MESSAGE value="using more generic iterator in tree" />
+    <MESSAGE value="found the better way lol" />
+    <option name="LAST_COMMIT_MESSAGE" value="found the better way lol" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

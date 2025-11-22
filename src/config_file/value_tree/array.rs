@@ -50,7 +50,7 @@ impl Node for Array {
 }
 
 impl Array {
-    pub fn new(headline: String, comments: Vec<String>, lines: &mut impl Iterator<Item=String>) -> Array {
+    pub fn new(headline: String, comments: Vec<String>, lines: &mut dyn Iterator<Item=String>) -> Array {
 
         let mut values = Vec::<String>::new();
 

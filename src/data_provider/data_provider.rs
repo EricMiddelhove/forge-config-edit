@@ -1,3 +1,3 @@
 pub trait DataProvider {
-  fn read(&self) -> &[u8];
+  fn read(&self) -> Box<dyn Iterator<Item=String>>;
 }

@@ -1,13 +1,21 @@
 use crate::data_provider::data_provider::DataProvider;
 use std::fs::File;
-use std::io::Read;
+use std::io::{BufRead, Read};
 
 pub(crate) struct FileProvider {
-  data: Box<[u8]>
+  buffer: String
 }
 impl DataProvider for FileProvider {
-  fn read(&self) -> &[u8] {
-    self.data.as_ref()
+  fn read(&self) -> Box<dyn Iterator<Item=String>> {
+    let strings = Box::new(
+      self.buffer
+        .lines()
+        .map(|line| {String::from(line)})
+        .collect::<Vec<String>>()
+        .into_iter()
+    );
+
+    strings
   }
 }
 
@@ -16,14 +24,11 @@ impl FileProvider {
     let mut buffer: Vec<u8> = Vec::new();
     let _ = file.read_to_end(&mut buffer);
 
-    let string_buf = String::from_utf8(buffer).unwrap();
-
-    let vecna = string_buf.into_bytes();
-
-    let buff = vecna.into_boxed_slice();
+    let buffer = String::from_utf8(buffer).unwrap();
 
     FileProvider{
-      data: buff,
+      buffer
     }
+
   }
 }

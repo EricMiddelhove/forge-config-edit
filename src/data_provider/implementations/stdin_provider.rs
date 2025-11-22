@@ -1,29 +1,16 @@
 use std::io;
-use std::io::Read;
+use std::io::{Lines, Read, Stdin, StdinLock};
 use crate::data_provider::data_provider::DataProvider;
 
-static PREALLOC_BUFFER_SIZE: usize = 1024;
-
-pub struct StdinProvider{
-  data: [u8; PREALLOC_BUFFER_SIZE],
-}
+pub struct StdinProvider;
 impl DataProvider for StdinProvider {
-  fn read(&self) -> &[u8] {
-    self.data.as_ref()
+  fn read(&self) -> Box<dyn Iterator<Item=String>> {
+    Box::new(io::stdin().lines().map(|s| s.unwrap()))
   }
 }
 
 impl StdinProvider {
-  pub(crate) fn new() -> StdinProvider {
-    let mut buffer = [0; PREALLOC_BUFFER_SIZE];
-    let res = io::stdin().read(&mut buffer).unwrap();
-
-    let lines = io::stdin().lines();
-
-    println!("{:?}", res);
-
-    StdinProvider {
-      data: buffer,
-    }
+  pub fn new() -> StdinProvider {
+    StdinProvider{}
   }
 }
