@@ -1,13 +1,12 @@
-use std::ops::ControlFlow;
-use crate::forge_config::node::Node;
-use crate::forge_config::tree::Tree;
+use crate::config_file::value_tree::node::Node;
+use crate::config_file::value_tree::tree::Tree;
 
 pub(crate) struct ConfigFile {
     tree: Tree,
 }
 
 impl ConfigFile {
-    pub (crate) fn new(data: String) -> ConfigFile {
+    pub (crate) fn new(data: Vec<u8>) -> ConfigFile {
 
         let buffer_string: String = String::from_utf8(data).unwrap();
 
@@ -30,6 +29,6 @@ impl ConfigFile {
 
 impl From<String> for ConfigFile {
     fn from(data: String) -> ConfigFile {
-        ConfigFile::new(data)
+        ConfigFile::new(Vec::from(data))
     }
 }

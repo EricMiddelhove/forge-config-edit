@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
-use crate::forge_config::node::{Node};
-use crate::forge_config::error::Error;
+use crate::config_file::value_tree::error::Error;
+use crate::config_file::value_tree::node::Node;
 
 static DATATYPE_NAME_SEPARATOR: char = ':';
 static NAME_VALUE_SEPARATOR: char = '=';

@@ -63,7 +63,7 @@ impl From<&str> for LineTypes {
 
 #[cfg(test)]
 mod tests {
-  use crate::forge_config::line_type::LineTypes;
+  use crate::config_file::value_tree::line_type::LineTypes;
 
   #[test]
   fn test_try_from_for_comment_line() {

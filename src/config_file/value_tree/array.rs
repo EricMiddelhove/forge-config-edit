@@ -1,7 +1,8 @@
 use std::fmt::{Display, Formatter};
 use std::str::Lines;
-use crate::forge_config::line_type::LineTypes;
-use crate::forge_config::node::Node;
+use crate::config_file::value_tree::line_type::LineTypes;
+use crate::config_file::value_tree::node::Node;
+
 static DATATYPE_NAME_SEPARATOR: char = ':';
 static NAME_VALUE_SEPARATOR: char = '<';
 static VALUE_END_SEPARATOR: char = '>';

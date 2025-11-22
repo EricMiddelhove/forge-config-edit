@@ -1,10 +1,10 @@
 use std::fmt::{Debug, Display, Formatter};
 use std::str::Lines;
-use crate::forge_config::node::{Node};
-use crate::forge_config::error::Error;
-use crate::forge_config::line_type::LineTypes;
-use crate::forge_config::value_pair::ValuePair;
-use crate::forge_config::array::Array;
+use crate::config_file::value_tree::array::Array;
+use crate::config_file::value_tree::error::Error;
+use crate::config_file::value_tree::line_type::LineTypes;
+use crate::config_file::value_tree::node::Node;
+use crate::config_file::value_tree::value_pair::ValuePair;
 
 static SUBTREE_START_MARKER: char = '{';
 
@@ -139,10 +139,10 @@ impl Node for Tree {
 #[cfg(test)]
 mod tests {
   use std::io::BufRead;
-  use crate::forge_config::array::Array;
-  use crate::forge_config::tree::Tree;
-  use crate::forge_config::value_pair::ValuePair;
-  
+  use crate::config_file::value_tree::array::Array;
+  use crate::config_file::value_tree::tree::Tree;
+  use crate::config_file::value_tree::value_pair::ValuePair;
+
   #[test]
   fn test_that_correct_name_is_retrieved(){
     let name = "test tree";

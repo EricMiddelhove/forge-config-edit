@@ -6,15 +6,29 @@
   <component name="CargoProjects">
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml">
       <package file="$PROJECT_DIR$">
-        <enabledFeature name="default" />
+        <feature name="default" enabled="true" />
       </package>
     </cargoProject>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7ee57940-fff4-48fb-87d3-1f1750473ca5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/forge_config/error.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/forge_config/line_type.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/forge_config/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/config_file/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/config_file/value_tree/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/data_provider/data_provider.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/data_provider/implementations/file_provider.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/data_provider/implementations/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/data_provider/implementations/stdin_provider.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/data_provider/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/forge_config/array.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/array.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/forge_config/config_file.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/config_file.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/forge_config/error.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/error.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/forge_config/line_type.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/line_type.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/forge_config/mod.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/forge_config/node.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/node.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/forge_config/tree.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/tree.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/forge_config/value_pair.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_file/value_tree/value_pair.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,6 +46,12 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:EricMiddelhove/forge-config-edit.git",
+    "accountId": "341b7d5e-77d0-4563-bf25-4d3443880be2"
+  }
+}]]></component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="ND7ndnS8" />
   </component>
@@ -50,7 +70,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.rust.reset.selective.auto.import": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "develop",
     "junie.onboarding.icon.badge.shown": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -59,19 +79,23 @@
     "nodejs_package_manager_path": "npm",
     "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
     "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "org.rust.disableDetachedFileInspection/Users/ericmiddelhove/Development/forge-config-edit/src/forge_config/config_file.rs": "true",
     "org.rust.first.attach.projects": "true",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/DataProvider/implementations" />
       <recent name="$PROJECT_DIR$/src/forge_config" />
+      <recent name="$PROJECT_DIR$/src/forge_config/value_tree" />
       <recent name="$PROJECT_DIR$/examples" />
       <recent name="$PROJECT_DIR$/parsing_examples" />
     </key>
   </component>
   <component name="RunManager">
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+      <option name="buildProfileId" value="dev" />
       <option name="command" value="run --package forge-config-edit --bin forge-config-edit" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <envs />
@@ -131,9 +155,9 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/main.rs</url>
-          <line>22</line>
-          <option name="timeStamp" value="17" />
+          <url>file://$PROJECT_DIR$/src/config_file/value_tree/tree.rs</url>
+          <line>140</line>
+          <option name="timeStamp" value="22" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
