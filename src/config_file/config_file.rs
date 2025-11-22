@@ -42,10 +42,6 @@ impl From<std::io::Lines<StdinLock<'_>>> for ConfigFile {
             .unwrap()
           );
 
-        // this is so goddamn stupid there must be a better way
-
-        // let mut str_lines = str_vec.lines();
-
         let tree = Tree::new("root".to_string(), &mut str_vec.into_iter());
 
         let tree = tree.unwrap();
