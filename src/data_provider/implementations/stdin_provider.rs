@@ -1,8 +1,11 @@
 use std::io;
+use std::io::Read;
 use crate::data_provider::data_provider::DataProvider;
 
+static PREALLOC_BUFFER_SIZE: usize = 1024;
+
 pub struct StdinProvider{
-  data: Box<[u8]>
+  data: [u8; PREALLOC_BUFFER_SIZE],
 }
 impl DataProvider for StdinProvider {
   fn read(&self) -> &[u8] {
@@ -11,12 +14,13 @@ impl DataProvider for StdinProvider {
 }
 
 impl StdinProvider {
-  fn new<'a>() -> StdinProvider {
-    let mut buffer = String::new();
-    io::stdin().read_line(&mut buffer).unwrap();
+  pub(crate) fn new() -> StdinProvider {
+    let mut buffer = [0; PREALLOC_BUFFER_SIZE];
+    let res = io::stdin().read(&mut buffer).unwrap();
 
-    let buffer = buffer.clone();
-    let buffer = buffer.into_bytes().into_boxed_slice();
+    let lines = io::stdin().lines();
+
+    println!("{:?}", res);
 
     StdinProvider {
       data: buffer,

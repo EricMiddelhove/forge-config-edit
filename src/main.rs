@@ -3,19 +3,18 @@ mod data_provider;
 
 use std::env;
 use std::fs::File;
-use std::io::{Read};
 
 use config_file::config_file::ConfigFile;
 use crate::data_provider::data_provider::DataProvider;
 use crate::data_provider::implementations::file_provider::FileProvider;
+use crate::data_provider::implementations::stdin_provider::StdinProvider;
 
 fn main(){
     let args: Vec<String> = env::args().collect();
-    println!("{:?}", args);
 
-    let provider = match_data_provider();
-    let mut buffer = provider.read();
-    
+    let provider = match_data_provider(args);
+    let buffer = provider.read();
+
     let string_buf = String::from_utf8(Vec::from(buffer)).unwrap(); // cloning data
 
     let file = ConfigFile::from(string_buf);
@@ -25,9 +24,19 @@ fn main(){
 
 
 
-fn match_data_provider() -> impl DataProvider {
+fn match_data_provider(args: Vec<String>) -> Box<dyn DataProvider> {
 
-    let mut file = File::open("examples/serverutilities.cfg").unwrap();
-    FileProvider::new(file)
+    let mut iter = args.iter();
+
+    if iter.find(|c| c.as_str() == "-p").is_some() {
+
+        let path_str = iter.next().unwrap();
+        let file = File::open(path_str).unwrap();
+        Box::new(FileProvider::new(file))
+
+    } else {
+        println!("Using Stdin");
+        Box::new(StdinProvider::new())
+    }
 
 }
