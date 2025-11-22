@@ -9,9 +9,9 @@ pub(crate) struct ConfigFile {
 impl ConfigFile {
     pub (crate) fn new(data: String) -> ConfigFile {
 
-        let mut buffer_lines = data.lines();
+        let mut buffer_lines = data.lines().map(|l| l.to_string());
 
-        let tree = Tree::new("root".to_string(), &mut buffer_lines.into());
+        let tree = Tree::new("root".to_string(), &mut buffer_lines);
 
         let tree = tree.unwrap();
 
@@ -40,15 +40,13 @@ impl From<std::io::Lines<StdinLock<'_>>> for ConfigFile {
         let str_vec = value
           .map( |v| v
             .unwrap()
-          )
-          .collect::<Vec<String>>()
-          .join("\n");
+          );
 
         // this is so goddamn stupid there must be a better way
 
-        let mut str_lines = str_vec.lines();
+        // let mut str_lines = str_vec.lines();
 
-        let tree = Tree::new("root".to_string(), &mut str_lines);
+        let tree = Tree::new("root".to_string(), &mut str_vec.into_iter());
 
         let tree = tree.unwrap();
 

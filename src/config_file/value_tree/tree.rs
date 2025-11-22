@@ -17,7 +17,7 @@ pub(crate) struct Tree {
 
 impl Tree {
 
-  pub fn new(name: String, lines: &mut Lines) -> Result<Tree, Error> {
+  pub fn new(name: String, lines: &mut impl Iterator<Item=String>) -> Result<Tree, Error> {
     let name = name.trim().to_string();
     let mut tree = Tree {
       name,
@@ -26,8 +26,8 @@ impl Tree {
     };
 
     let mut comment_buffer = Vec::<String>::new();
-
     let mut tree_has_ended_flag = false;
+    
     while !tree_has_ended_flag {
       let line = &lines.next();
 
