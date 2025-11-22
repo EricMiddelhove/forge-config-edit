@@ -1,5 +1,4 @@
 use std::fmt::{Debug, Display, Formatter};
-use std::str::Lines;
 use crate::config_file::value_tree::array::Array;
 use crate::config_file::value_tree::error::Error;
 use crate::config_file::value_tree::line_type::LineTypes;
@@ -138,7 +137,6 @@ impl Node for Tree {
 
 #[cfg(test)]
 mod tests {
-  use std::io::BufRead;
   use crate::config_file::value_tree::array::Array;
   use crate::config_file::value_tree::tree::Tree;
   use crate::config_file::value_tree::value_pair::ValuePair;
@@ -147,7 +145,7 @@ mod tests {
   fn test_that_correct_name_is_retrieved(){
     let name = "test tree";
     let test_content = "# Hallo \n # Welt".to_string();
-    let mut lines = test_content.lines();
+    let mut lines = test_content.lines().map(|s| s.to_string());
 
     let result = Tree::new(name.to_string(), &mut lines);
     let name = result.unwrap().name;
@@ -165,7 +163,7 @@ mod tests {
       }
     ".to_string();
 
-    let mut lines = test_content.lines();
+    let mut lines = test_content.lines().map(|s| s.to_string());
     let expected_comments = vec!["# Hallo".to_string(), "# Welt".to_string()];
 
     let result = Tree::new("tests".to_string(), &mut lines).unwrap();
@@ -185,7 +183,7 @@ mod tests {
       }
     ".to_string();
 
-    let mut lines = test_content.lines();
+    let mut lines = test_content.lines().map(|s| s.to_string());
 
     let exptected_subtree = Tree {
       name: "root".to_string(),
@@ -219,7 +217,7 @@ mod tests {
       }
     ".to_string();
 
-    let mut lines = test_content.lines();
+    let mut lines = test_content.lines().map(|s| s.to_string());
 
     let exptected_subtree = Tree {
       name: "root".to_string(),
