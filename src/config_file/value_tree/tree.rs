@@ -152,7 +152,7 @@ mod tests {
     assert_eq!(name, name);
   }
 
-  #[test] // skip test for now, since this behavior is not implemented yet https://github.com/EricMiddelhove/forge-config-edit/issues/1
+  #[test]
   fn test_that_correct_comments_are_retrieved(){
 
     let test_content = "

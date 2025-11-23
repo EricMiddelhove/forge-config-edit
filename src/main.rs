@@ -31,7 +31,7 @@ fn match_data_provider(args: Args) -> Box<dyn DataProvider> {
 
     let mut args = args;
 
-    if args.find(|c| c.as_str() == "-p").is_some() {
+    if args.find(|c| c.as_str() == "--input-file-path").is_some() {
 
         let path_str = args.next().unwrap();
         let file = File::open(path_str).unwrap();
