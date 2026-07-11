@@ -1,3 +1,5 @@
+pub(crate) mod blank_line;
+pub(crate) mod comment;
 mod array;
 mod error;
 mod line_type;

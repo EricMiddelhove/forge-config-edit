@@ -24,7 +24,7 @@ fn main(){
 
     file.export();
 
-    println!("Took {:?}", time.elapsed());
+    eprintln!("Took {:?}", time.elapsed());
 }
 
 fn match_data_provider(args: Args) -> Box<dyn DataProvider> {
@@ -37,7 +37,6 @@ fn match_data_provider(args: Args) -> Box<dyn DataProvider> {
         let file = File::open(path_str).unwrap();
         Box::new(FileProvider::new(file))
     } else {
-        println!("Using Stdin");
         Box::new(StdinProvider::new())
     }
 

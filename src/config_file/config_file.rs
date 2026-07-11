@@ -22,7 +22,7 @@ impl ConfigFile {
     pub(crate) fn export(&self) {
         let mut s = String::from("# Modified with EricMiddelhove/forge-config-edit\n");
         self.tree.export(&mut s, 0, true);
-        println!("{}", s);
+        print!("{}", s);
     }
 }
 
