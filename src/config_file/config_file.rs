@@ -1,3 +1,4 @@
+use crate::config_file::value_tree::set_error::SetError;
 use crate::config_file::value_tree::tree::Tree;
 
 pub(crate) struct ConfigFile {
@@ -5,16 +6,14 @@ pub(crate) struct ConfigFile {
 }
 
 impl ConfigFile {
-    pub (crate) fn new(data: String) -> ConfigFile {
-
+    pub(crate) fn new(data: String) -> ConfigFile {
         let mut buffer_lines = data.lines().map(|l| l.to_string());
-
-        let tree = Tree::new("root".to_string(), &mut buffer_lines);
-
-        let tree = tree.unwrap();
-
+        let tree = Tree::new("root".to_string(), &mut buffer_lines).unwrap();
         ConfigFile { tree }
+    }
 
+    pub(crate) fn set(&mut self, path: &[&str], value: &str) -> Result<(), SetError> {
+        self.tree.set(path, value)
     }
 
     pub(crate) fn export(&self) {
@@ -32,13 +31,8 @@ impl From<String> for ConfigFile {
 
 impl From<Box<dyn Iterator<Item=String>>> for ConfigFile {
     fn from(value: Box<dyn Iterator<Item=String>>) -> Self {
-
         let mut value = value;
-
-        let tree = Tree::new("root".to_string(), &mut value);
-
-        let tree = tree.unwrap();
-
+        let tree = Tree::new("root".to_string(), &mut value).unwrap();
         ConfigFile { tree }
     }
 }

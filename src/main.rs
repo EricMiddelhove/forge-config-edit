@@ -18,11 +18,15 @@ fidelity, preserving comments, blank lines, and formatting.
 Options:
   --input-file-path <PATH>   Path to the input config file.
                              If omitted, reads from stdin.
+  --set <PATH>=<VALUE>       Set a config value. PATH is dot-separated:
+                             section.subsection.key. May be repeated.
   -h, --help                 Show this help message and exit.
 
 Examples:
   forge-config-edit --input-file-path config.cfg
   cat config.cfg | forge-config-edit
+  forge-config-edit --input-file-path config.cfg --set balance!.someKey=false
+  forge-config-edit --input-file-path config.cfg --set a.b.key=1 --set c.key=2
 ";
 
 fn main() {
@@ -36,7 +40,26 @@ fn main() {
     let time = Instant::now();
     let provider = match_data_provider(&args);
     let buffer = provider.read();
-    let file = ConfigFile::from(buffer);
+    let mut file = ConfigFile::from(buffer);
+
+    for set_arg in collect_set_args(&args) {
+        let eq_pos = match set_arg.find('=') {
+            Some(p) => p,
+            None => {
+                eprintln!("Error: --set value must be in the format path.key=value (got: {set_arg})");
+                std::process::exit(1);
+            }
+        };
+        let path_str = &set_arg[..eq_pos];
+        let value = &set_arg[eq_pos + 1..];
+        let path: Vec<&str> = path_str.split('.').collect();
+
+        if let Err(e) = file.set(&path, value) {
+            eprintln!("Error: {e}");
+            std::process::exit(1);
+        }
+    }
+
     file.export();
     eprintln!("Took {:?}", time.elapsed());
 }
@@ -49,4 +72,23 @@ fn match_data_provider(args: &[String]) -> Box<dyn DataProvider> {
     } else {
         Box::new(StdinProvider::new())
     }
+}
+
+fn collect_set_args(args: &[String]) -> Vec<&str> {
+    let mut result = Vec::new();
+    let mut i = 0;
+    while i < args.len() {
+        if args[i] == "--set" {
+            if let Some(val) = args.get(i + 1) {
+                result.push(val.as_str());
+                i += 2;
+                continue;
+            } else {
+                eprintln!("Error: --set requires a value");
+                std::process::exit(1);
+            }
+        }
+        i += 1;
+    }
+    result
 }

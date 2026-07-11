@@ -4,6 +4,7 @@ use crate::config_file::value_tree::comment::Comment;
 use crate::config_file::value_tree::config_node::ConfigNode;
 use crate::config_file::value_tree::error::Error;
 use crate::config_file::value_tree::line_type::LineTypes;
+use crate::config_file::value_tree::set_error::SetError;
 use crate::config_file::value_tree::value_pair::ValuePair;
 
 static SUBTREE_START_MARKER: char = '{';
@@ -63,6 +64,36 @@ impl Tree {
 
   pub(crate) fn name(&self) -> &str {
     &self.name
+  }
+
+  pub(crate) fn set(&mut self, path: &[&str], value: &str) -> Result<(), SetError> {
+    let (head, tail) = path.split_first().ok_or(SetError::EmptyPath)?;
+
+    for node in &mut self.tree_map {
+      match node {
+        ConfigNode::Tree(t) if t.name() == *head => {
+          return if tail.is_empty() {
+            Err(SetError::IsSection(head.to_string()))
+          } else {
+            t.set(tail, value)
+          };
+        },
+        ConfigNode::ValuePair(vp) if vp.name == *head => {
+          return if tail.is_empty() {
+            vp.value = value.to_string();
+            Ok(())
+          } else {
+            Err(SetError::NotASection(head.to_string()))
+          };
+        },
+        ConfigNode::Array(a) if a.name == *head => {
+          return Err(SetError::IsArray(head.to_string()));
+        },
+        _ => continue,
+      }
+    }
+
+    Err(SetError::NotFound(head.to_string()))
   }
 
   pub(crate) fn export(&self, s: &mut String, indent: usize, skip_root: bool) {
