@@ -4,6 +4,7 @@ use crate::config_file::value_tree::comment::Comment;
 use crate::config_file::value_tree::config_node::ConfigNode;
 use crate::config_file::value_tree::error::Error;
 use crate::config_file::value_tree::line_type::LineTypes;
+use crate::config_file::value_tree::get_error::GetError;
 use crate::config_file::value_tree::set_error::SetError;
 use crate::config_file::value_tree::value_pair::ValuePair;
 
@@ -64,6 +65,39 @@ impl Tree {
 
   pub(crate) fn name(&self) -> &str {
     &self.name
+  }
+
+  pub(crate) fn find<'a>(&'a self, path: &[&str]) -> Result<&'a ConfigNode, GetError> {
+    let (head, tail) = path.split_first().ok_or(GetError::EmptyPath)?;
+
+    for node in &self.tree_map {
+      match node {
+        ConfigNode::Tree(t) if t.name() == *head => {
+          return if tail.is_empty() {
+            Ok(node)
+          } else {
+            t.find(tail)
+          };
+        },
+        ConfigNode::ValuePair(vp) if vp.name == *head => {
+          return if tail.is_empty() {
+            Ok(node)
+          } else {
+            Err(GetError::NotASection(head.to_string()))
+          };
+        },
+        ConfigNode::Array(a) if a.name == *head => {
+          return if tail.is_empty() {
+            Ok(node)
+          } else {
+            Err(GetError::NotASection(head.to_string()))
+          };
+        },
+        _ => continue,
+      }
+    }
+
+    Err(GetError::NotFound(head.to_string()))
   }
 
   pub(crate) fn set(&mut self, path: &[&str], value: &str) -> Result<(), SetError> {
