@@ -1,0 +1,78 @@
+name: Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            name: linux-amd64
+          - target: aarch64-unknown-linux-musl
+            name: linux-arm64
+          - target: arm-unknown-linux-musleabihf
+            name: linux-armv6
+          - target: armv7-unknown-linux-musleabihf
+            name: linux-armv7
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross
+        uses: taiki-e/install-action@cross
+
+      - name: Build
+        run: cross build --release --target ${{ matrix.target }}
+
+      - name: Rename binary
+        run: cp target/${{ matrix.target }}/release/forge-config-edit forge-config-edit-${{ matrix.name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-config-edit-${{ matrix.name }}
+          path: forge-config-edit-${{ matrix.name }}
+
+  release:
+    name: Staging release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Delete existing staging release
+        run: gh release delete staging --yes --cleanup-tag || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create staging release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: staging
+          name: Staging
+          prerelease: true
+          make_latest: false
+          files: artifacts/*
+          body: |
+            Staging build from `develop`.
+            Commit: ${{ github.sha }}
