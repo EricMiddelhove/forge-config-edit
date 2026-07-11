@@ -36,8 +36,43 @@ jobs:
       - name: Build
         run: cross build --release --target ${{ matrix.target }}
 
+      - name: Rename binary
+        run: cp target/${{ matrix.target }}/release/forge-config-edit forge-config-edit-${{ matrix.name }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: forge-config-edit-${{ matrix.name }}
-          path: target/${{ matrix.target }}/release/forge-config-edit
+          path: forge-config-edit-${{ matrix.name }}
+
+  release:
+    name: Staging release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Delete existing staging release
+        run: gh release delete staging --yes --cleanup-tag || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create staging release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: staging
+          name: Staging
+          prerelease: true
+          make_latest: false
+          files: artifacts/*
+          body: |
+            Staging build from `develop`.
+            Commit: ${{ github.sha }}
