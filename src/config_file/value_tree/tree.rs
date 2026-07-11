@@ -1,10 +1,9 @@
 use std::fmt::{Debug, Display, Formatter};
 use crate::config_file::value_tree::array::Array;
-use crate::config_file::value_tree::blank_line::BlankLine;
 use crate::config_file::value_tree::comment::Comment;
+use crate::config_file::value_tree::config_node::ConfigNode;
 use crate::config_file::value_tree::error::Error;
 use crate::config_file::value_tree::line_type::LineTypes;
-use crate::config_file::value_tree::node::Node;
 use crate::config_file::value_tree::value_pair::ValuePair;
 
 static SUBTREE_START_MARKER: char = '{';
@@ -12,7 +11,7 @@ static SUBTREE_START_MARKER: char = '{';
 #[derive(Debug)]
 pub(crate) struct Tree {
   name: String,
-  tree_map: Vec<Box<dyn Node>>,
+  tree_map: Vec<ConfigNode>,
 }
 
 impl Tree {
@@ -33,24 +32,24 @@ impl Tree {
 
       match LineTypes::from(line) {
         LineTypes::KeyValuePair => {
-          tree.tree_map.push(Box::new(ValuePair::try_new(raw.trim_start())?));
+          tree.tree_map.push(ConfigNode::ValuePair(ValuePair::try_new(raw.trim_start())?));
         },
         LineTypes::TreeStart => {
           let name_end = line.chars().position(|c| c == SUBTREE_START_MARKER).unwrap();
           let name = line[..name_end].trim();
-          tree.tree_map.push(Box::new(Tree::new(name.to_string(), lines)?));
+          tree.tree_map.push(ConfigNode::Tree(Box::new(Tree::new(name.to_string(), lines)?)));
         },
         LineTypes::TreeEnd => {
           tree_has_ended_flag = true;
         },
         LineTypes::WhiteSpace => {
-          tree.tree_map.push(Box::new(BlankLine));
+          tree.tree_map.push(ConfigNode::BlankLine);
         },
         LineTypes::Comment => {
-          tree.tree_map.push(Box::new(Comment::new(raw.trim_start())));
+          tree.tree_map.push(ConfigNode::Comment(Comment::new(raw.trim_start())));
         },
         LineTypes::ArrayStart => {
-          tree.tree_map.push(Box::new(Array::new(line.to_string(), lines)));
+          tree.tree_map.push(ConfigNode::Array(Array::new(line.to_string(), lines)));
         },
         LineTypes::ArrayEnd => {},
         LineTypes::Unknown => {
@@ -60,6 +59,31 @@ impl Tree {
     }
 
     Ok(tree)
+  }
+
+  pub(crate) fn name(&self) -> &str {
+    &self.name
+  }
+
+  pub(crate) fn export(&self, s: &mut String, indent: usize, skip_root: bool) {
+    let indent_string = " ".repeat(indent * 4);
+    let child_indent = if skip_root { indent } else { indent + 1 };
+
+    if !skip_root {
+      s.push_str(&indent_string);
+      s.push_str(&self.name);
+      s.push(' ');
+      s.push('{');
+      s.push('\n');
+    }
+    for node in &self.tree_map {
+      node.export(s, child_indent, false);
+    }
+    if !skip_root {
+      s.push_str(&indent_string);
+      s.push('}');
+      s.push('\n');
+    }
   }
 
 }
@@ -82,37 +106,10 @@ impl PartialEq for Tree {
   }
 }
 
-impl Node for Tree {
-  fn name(&self) -> &str {
-    &self.name
-  }
-
-  fn export(&self, s: &mut String, indent: usize, skip_root: bool) {
-    let indent_string = " ".repeat(indent * 4);
-    let child_indent = if skip_root { indent } else { indent + 1 };
-
-    if !skip_root {
-      s.push_str(&indent_string);
-      s.push_str(&self.name);
-      s.push(' ');
-      s.push('{');
-      s.push('\n');
-    }
-    for node in &self.tree_map {
-      node.export(s, child_indent, false);
-    }
-    if !skip_root {
-      s.push_str(&indent_string);
-      s.push('}');
-      s.push('\n');
-    }
-  }
-}
-
 #[cfg(test)]
 mod tests {
   use crate::config_file::value_tree::array::Array;
-  use crate::config_file::value_tree::node::Node;
+  use crate::config_file::value_tree::config_node::ConfigNode;
   use crate::config_file::value_tree::tree::Tree;
   use crate::config_file::value_tree::value_pair::ValuePair;
 
@@ -149,14 +146,14 @@ mod tests {
 
     let expected = Tree {
       name: "root".to_string(),
-      tree_map: vec![Box::new(Tree {
+      tree_map: vec![ConfigNode::Tree(Box::new(Tree {
         name: "test".to_string(),
-        tree_map: vec![Box::new(ValuePair {
+        tree_map: vec![ConfigNode::ValuePair(ValuePair {
           datatype: "S".to_string(),
           name: "key".to_string(),
           value: "value".to_string(),
         })],
-      })],
+      }))],
     };
 
     let result = Tree::new("root".to_string(), &mut lines).unwrap();
@@ -170,14 +167,14 @@ mod tests {
 
     let expected = Tree {
       name: "root".to_string(),
-      tree_map: vec![Box::new(Tree {
+      tree_map: vec![ConfigNode::Tree(Box::new(Tree {
         name: "test".to_string(),
-        tree_map: vec![Box::new(Array {
+        tree_map: vec![ConfigNode::Array(Array {
           name: "array".to_string(),
           datatype: "S".to_string(),
           values: vec!["v1".to_string(), "v2".to_string()],
         })],
-      })],
+      }))],
     };
 
     let result = Tree::new("root".to_string(), &mut lines).unwrap();

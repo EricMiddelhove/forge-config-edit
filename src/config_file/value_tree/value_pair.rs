@@ -1,6 +1,5 @@
 use std::fmt::{Debug, Display, Formatter};
 use crate::config_file::value_tree::error::Error;
-use crate::config_file::value_tree::node::Node;
 
 static DATATYPE_NAME_SEPARATOR: char = ':';
 static NAME_VALUE_SEPARATOR: char = '=';
@@ -14,7 +13,6 @@ pub(crate) struct ValuePair {
 
 impl ValuePair {
   pub(crate) fn try_new(line: &str) -> Result<Self, Error> {
-
     let datatype_separator = match line.chars().position(|c| c == DATATYPE_NAME_SEPARATOR) {
       None => return Err(Error::LineNotParseable),
       Some(pos) => pos
@@ -31,23 +29,17 @@ impl ValuePair {
 
     Ok(ValuePair { datatype, name, value })
   }
+
+  pub(crate) fn export(&self, s: &mut String, indent: usize) {
+    let indent_string = " ".repeat(indent * 4);
+    s.push_str(indent_string.as_str());
+    s.push_str(format!("{}:{}={}", self.datatype, self.name, self.value).as_str());
+    s.push('\n');
+  }
 }
 
 impl Display for ValuePair {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     write!(f, "{}:{}={}", self.datatype, self.name, self.value)
-  }
-}
-
-impl Node for ValuePair {
-  fn name(&self) -> &str {
-    &self.name
-  }
-
-  fn export(&self, s: &mut String, indent: usize, _skip_root: bool) {
-    let indent_string = " ".repeat(indent * 4);
-    s.push_str(indent_string.as_str());
-    s.push_str(format!("{}:{}={}", self.datatype, self.name, self.value).as_str());
-    s.push('\n');
   }
 }
