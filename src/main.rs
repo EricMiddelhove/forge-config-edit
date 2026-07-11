@@ -13,26 +13,46 @@ const HELP: &str = "\
 Usage: forge-config-edit [OPTIONS] [FILE]
 
 Parses and re-exports Forge/FML configuration files with full round-trip
-fidelity, preserving comments, blank lines, and formatting.
+fidelity, preserving comments, blank lines, and formatting. FILE can be
+given as a positional argument or via --input-file-path; omit both to read
+from stdin.
+
+Paths use dot notation: section.subsection.key
 
 Options:
-  --input-file-path <PATH>   Path to the input config file (or pass FILE as a
-                             positional argument). Reads from stdin if omitted.
-  --set <PATH>=<VALUE>       Set a config value. PATH is dot-separated:
-                             section.subsection.key. May be repeated.
-  --get=<PATH>               Print the value at PATH (slash-separated).
-                             Prints subtree contents when PATH is a section.
-  --type=<PATH>              Print the type of the key at PATH.
-                             One of: bool, string, int, double, long, char,
-                             bool[], string[], ..., subtree.
-  -h, --help                 Show this help message and exit.
+  FILE                         Input config file.
+  --input-file-path <FILE>     Input config file (alternative to positional).
+  --set <PATH>=<VALUE>         Set a value and write the modified config to
+                               stdout. May be repeated for multiple keys.
+  --get=<PATH>                 Print the value at PATH. When PATH is a section,
+                               its full contents are printed.
+  --type=<PATH>                Print the type of the key at PATH.
+                               Values:  bool | string | int | double | long | char
+                               Arrays:  bool[] | string[] | ...
+                               Section: subtree
+  -h, --help                   Show this help message and exit.
 
 Examples:
+  # Re-export a config unchanged (round-trip check)
   forge-config-edit config.cfg
-  cat config.cfg | forge-config-edit --set balance!.someKey=false
-  forge-config-edit --get=/backups/enable_backups config.cfg
-  forge-config-edit --type=/backups/enable_backups config.cfg
-  forge-config-edit --set a.b.key=1 --set c.key=2 config.cfg
+
+  # Read from stdin
+  cat config.cfg | forge-config-edit
+
+  # Modify a value and write result to a new file
+  forge-config-edit --set backups.enable_backups=false config.cfg > out.cfg
+
+  # Modify multiple values at once
+  forge-config-edit --set afk.enabled=false --set backups.compression_level=9 config.cfg
+
+  # Read a single value
+  forge-config-edit --get=backups.enable_backups config.cfg
+
+  # Read an entire section
+  forge-config-edit --get=backups config.cfg
+
+  # Check the type of a key
+  forge-config-edit --type=backups.compression_level config.cfg
 ";
 
 struct ParsedArgs {
@@ -90,7 +110,7 @@ fn parse_args(args: &[String]) -> ParsedArgs {
 }
 
 fn parse_config_path(raw: &str) -> Vec<&str> {
-    raw.trim_start_matches('/').split('/').filter(|s| !s.is_empty()).collect()
+    raw.split('.').filter(|s| !s.is_empty()).collect()
 }
 
 fn main() {
