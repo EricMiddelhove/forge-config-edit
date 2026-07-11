@@ -1,39 +1,68 @@
+# forge-config-edit
+
+Parse, inspect, and modify Forge/FML Minecraft configuration files with full
+round-trip fidelity — comments, blank lines, and formatting are preserved.
+
 ## Install
 
-When you want to build the tool from scratch, using cargo is recommended. Refer to the [official rust website](https://rust-lang.org/tools/install/) for installation advice.
+### Pre-built binaries
 
-Once cargo is installed, you can clone this repo and install it
-```
+Download the latest staging build from the
+[releases page](https://github.com/EricMiddelhove/forge-config-edit/releases/tag/staging).
+Builds are available for Linux amd64, arm64, armv6, and armv7 (musl, statically linked).
+
+### From source
+
+Requires [Rust/Cargo](https://rust-lang.org/tools/install).
+
+```sh
 git clone git@github.com:EricMiddelhove/forge-config-edit.git
 cd forge-config-edit
 cargo install --path .
 ```
 
-this set of commands installs the binary to your system.
-
 ## Usage
 
-For usage information, refer to the help page of the command
-
 ```
-Usage: forge-config-edit [COMMAND] [--help] [--version]
-    --help      Print help information
-    --version   Print version information
-
-Commands:
-    get         Get a value/type from the forge config file
-    set         Set a value in the forge config file
-
-
-forge-config-edit get --file=<path> [--type] <key>
-    --file=<path>    Path to the forge config file to be used
-    --type           Get the type of the value instead of the value itself
-    key              Key to get the value/type for. Use dot notation for nested keys (e.g., "modpack.version")
-
-forge-config-edit set --file=<path> <key> [<value>]
-    --file=<path>    Path to the forge config file to be used
-    key              Key to set the value for. Use dot notation for nested keys (e.g., "modpack.version")
-    value            Value to set. If omitted, the value will be removed.
-
+forge-config-edit [OPTIONS] [FILE]
 ```
 
+The input file can be passed as a positional argument, via `--input-file-path`,
+or piped through stdin. All paths use **dot notation**: `section.subsection.key`.
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `FILE` / `--input-file-path <FILE>` | Input config file. Reads from stdin if omitted. |
+| `--set <PATH>=<VALUE>` | Set a value and write the modified config to stdout. May be repeated. |
+| `--get=<PATH>` | Print the value at PATH. Prints the full section when PATH is a section. |
+| `--type=<PATH>` | Print the type of the key at PATH (`bool`, `string`, `int`, `double`, `long`, `char`, `bool[]`, …, `subtree`). |
+| `-h`, `--help` | Show help and exit. |
+
+### Examples
+
+```sh
+# Re-export a config unchanged (round-trip check)
+forge-config-edit config.cfg
+
+# Read from stdin
+cat config.cfg | forge-config-edit
+
+# Modify a value and write the result to a new file
+forge-config-edit --set backups.enable_backups=false config.cfg > out.cfg
+
+# Modify multiple values at once
+forge-config-edit --set afk.enabled=false --set backups.compression_level=9 config.cfg
+
+# Read a single value
+forge-config-edit --get=backups.enable_backups config.cfg
+# → true
+
+# Read an entire section
+forge-config-edit --get=backups config.cfg
+
+# Check the type of a key
+forge-config-edit --type=backups.compression_level config.cfg
+# → int
+```
