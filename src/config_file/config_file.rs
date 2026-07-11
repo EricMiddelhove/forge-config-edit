@@ -29,6 +29,31 @@ impl ConfigFile {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_config_file_find_returns_correct_value() {
+        let input = "server {\n    B:enabled=true\n}".to_string();
+        let file = ConfigFile::new(input);
+
+        let node = file.find(&["server", "enabled"]).unwrap();
+        assert_eq!(node.value(), Some("true"));
+    }
+
+    #[test]
+    fn test_config_file_set_mutates_correctly() {
+        let input = "server {\n    B:enabled=true\n}".to_string();
+        let mut file = ConfigFile::new(input);
+
+        file.set(&["server", "enabled"], "false").unwrap();
+
+        let node = file.find(&["server", "enabled"]).unwrap();
+        assert_eq!(node.value(), Some("false"));
+    }
+}
+
 impl From<String> for ConfigFile {
     fn from(data: String) -> ConfigFile {
         ConfigFile::new(String::from(data))

@@ -318,6 +318,16 @@ mod tests {
   }
 
   #[test]
+  fn test_set_returns_error_for_missing_key() {
+    let content = "S:host=localhost".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let mut tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    let result = tree.set(&["nonexistent"], "value");
+    assert!(matches!(result, Err(SetError::NotFound(_))));
+  }
+
+  #[test]
   fn test_that_correct_name_is_retrieved() {
     let name = "test tree";
     let test_content = "# Hallo \n # Welt".to_string();

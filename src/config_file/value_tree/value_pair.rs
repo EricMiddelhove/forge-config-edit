@@ -38,6 +38,17 @@ impl ValuePair {
   }
 }
 
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_value_pair_returns_error_on_malformed_line() {
+    let result = ValuePair::try_new("this is not a valid key-value pair");
+    assert!(result.is_err());
+  }
+}
+
 impl Display for ValuePair {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     write!(f, "{}:{}={}", self.datatype, self.name, self.value)

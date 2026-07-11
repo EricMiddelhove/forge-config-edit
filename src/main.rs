@@ -200,6 +200,50 @@ fn main() {
     eprintln!("Took {:?}", time.elapsed());
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_args_detects_positional_file() {
+        let args = vec!["forge-config-edit".to_string(), "config.cfg".to_string()];
+        let parsed = parse_args(&args);
+        assert_eq!(parsed.file_path, Some("config.cfg".to_string()));
+    }
+
+    #[test]
+    fn test_parse_args_captures_get_and_type_paths() {
+        let args = vec![
+            "forge-config-edit".to_string(),
+            "--get=server.enabled".to_string(),
+            "--type=server.enabled".to_string(),
+        ];
+        let parsed = parse_args(&args);
+        assert_eq!(parsed.get_path, Some("server.enabled".to_string()));
+        assert_eq!(parsed.type_path, Some("server.enabled".to_string()));
+    }
+
+    #[test]
+    fn test_parse_args_collects_multiple_set_args() {
+        let args = vec![
+            "forge-config-edit".to_string(),
+            "--set".to_string(),
+            "a.key=1".to_string(),
+            "--set".to_string(),
+            "b.key=2".to_string(),
+        ];
+        let parsed = parse_args(&args);
+        assert_eq!(parsed.set_args, vec!["a.key=1", "b.key=2"]);
+    }
+
+    #[test]
+    fn test_parse_config_path_splits_on_dots() {
+        assert_eq!(parse_config_path("server.enabled"), vec!["server", "enabled"]);
+        assert_eq!(parse_config_path("a.b.c"), vec!["a", "b", "c"]);
+        assert_eq!(parse_config_path("key"), vec!["key"]);
+    }
+}
+
 fn open_provider(file_path: Option<&str>) -> Box<dyn DataProvider> {
     match file_path {
         Some(path) => {
