@@ -63,6 +63,16 @@ struct ParsedArgs {
     help: bool,
 }
 
+fn require_value(args: &[String], i: usize, flag: &str) -> String {
+    match args.get(i) {
+        Some(v) => v.clone(),
+        None => {
+            eprintln!("Error: {flag} requires a value");
+            std::process::exit(1);
+        }
+    }
+}
+
 fn parse_args(args: &[String]) -> ParsedArgs {
     let mut result = ParsedArgs {
         file_path: None,
@@ -79,24 +89,24 @@ fn parse_args(args: &[String]) -> ParsedArgs {
             result.help = true;
         } else if arg == "--input-file-path" {
             i += 1;
-            result.file_path = Some(args.get(i).expect("--input-file-path requires a value").clone());
+            result.file_path = Some(require_value(&args, i, "--input-file-path"));
         } else if let Some(v) = arg.strip_prefix("--input-file-path=") {
             result.file_path = Some(v.to_string());
         } else if arg == "--set" {
             i += 1;
-            result.set_args.push(args.get(i).expect("--set requires a value").clone());
+            result.set_args.push(require_value(&args, i, "--set"));
         } else if let Some(v) = arg.strip_prefix("--set=") {
             result.set_args.push(v.to_string());
         } else if let Some(v) = arg.strip_prefix("--get=") {
             result.get_path = Some(v.to_string());
         } else if arg == "--get" {
             i += 1;
-            result.get_path = Some(args.get(i).expect("--get requires a value").clone());
+            result.get_path = Some(require_value(&args, i, "--get"));
         } else if let Some(v) = arg.strip_prefix("--type=") {
             result.type_path = Some(v.to_string());
         } else if arg == "--type" {
             i += 1;
-            result.type_path = Some(args.get(i).expect("--type requires a value").clone());
+            result.type_path = Some(require_value(&args, i, "--type"));
         } else if !arg.starts_with('-') {
             result.file_path = Some(arg.clone());
         } else {
@@ -136,7 +146,10 @@ fn main() {
     let time = Instant::now();
     let provider = open_provider(parsed.file_path.as_deref());
     let buffer = provider.read();
-    let mut file = ConfigFile::from(buffer);
+    let mut file = ConfigFile::try_from(buffer).unwrap_or_else(|e| {
+        eprintln!("Error: {e}");
+        std::process::exit(1);
+    });
 
     if let Some(path_str) = parsed.get_path {
         let path = parse_config_path(&path_str);
@@ -251,7 +264,11 @@ fn open_provider(file_path: Option<&str>) -> Box<dyn DataProvider> {
                 eprintln!("Error: cannot open '{path}': {e}");
                 std::process::exit(1);
             });
-            Box::new(FileProvider::new(file))
+            let provider = FileProvider::new(file).unwrap_or_else(|e| {
+                eprintln!("Error: cannot read '{path}': {e}");
+                std::process::exit(1);
+            });
+            Box::new(provider)
         },
         None => Box::new(StdinProvider::new()),
     }

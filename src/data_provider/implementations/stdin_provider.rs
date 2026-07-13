@@ -1,11 +1,15 @@
 use std::io;
-use std::io::{Lines, Read, Stdin, StdinLock};
 use crate::data_provider::data_provider::DataProvider;
 
 pub struct StdinProvider;
 impl DataProvider for StdinProvider {
   fn read(&self) -> Box<dyn Iterator<Item=String>> {
-    Box::new(io::stdin().lines().map(|s| s.unwrap()))
+    Box::new(io::stdin().lines().map(|line| {
+      line.unwrap_or_else(|e| {
+        eprintln!("Error: failed to read from stdin: {e}");
+        std::process::exit(1);
+      })
+    }))
   }
 }
 

@@ -1,6 +1,7 @@
 use crate::data_provider::data_provider::DataProvider;
 use std::fs::File;
-use std::io::{BufRead, Read};
+use std::io;
+use std::io::Read;
 
 pub(crate) struct FileProvider {
   buffer: String
@@ -20,15 +21,13 @@ impl DataProvider for FileProvider {
 }
 
 impl FileProvider {
-  pub fn new<'a>(mut file: File) -> FileProvider {
+  pub fn new(mut file: File) -> io::Result<FileProvider> {
     let mut buffer: Vec<u8> = Vec::new();
-    let _ = file.read_to_end(&mut buffer);
+    file.read_to_end(&mut buffer)?;
 
-    let buffer = String::from_utf8(buffer).unwrap();
+    let buffer = String::from_utf8(buffer)
+      .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
-    FileProvider{
-      buffer
-    }
-
+    Ok(FileProvider { buffer })
   }
 }
