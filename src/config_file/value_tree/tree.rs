@@ -37,7 +37,8 @@ impl Tree {
           tree.tree_map.push(ConfigNode::ValuePair(ValuePair::try_new(raw.trim_start())?));
         },
         LineTypes::TreeStart => {
-          let name_end = line.chars().position(|c| c == SUBTREE_START_MARKER).unwrap();
+          let name_end = line.chars().position(|c| c == SUBTREE_START_MARKER)
+              .ok_or_else(|| Error::MissingSubtreeStart(line.to_string()))?;
           let name = line[..name_end].trim();
           tree.tree_map.push(ConfigNode::Tree(Box::new(Tree::new(name.to_string(), lines)?)));
         },
@@ -51,7 +52,7 @@ impl Tree {
           tree.tree_map.push(ConfigNode::Comment(Comment::new(raw.trim_start())));
         },
         LineTypes::ArrayStart => {
-          tree.tree_map.push(ConfigNode::Array(Array::new(line.to_string(), lines)));
+          tree.tree_map.push(ConfigNode::Array(Array::new(line.to_string(), lines)?));
         },
         LineTypes::ArrayEnd => {},
         LineTypes::Unknown => {
