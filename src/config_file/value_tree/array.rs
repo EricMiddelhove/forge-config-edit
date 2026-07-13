@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use crate::config_file::value_tree::error::Error;
 use crate::config_file::value_tree::line_type::LineTypes;
 
 static DATATYPE_NAME_SEPARATOR: char = ':';
@@ -13,7 +14,7 @@ pub(crate) struct Array {
 }
 
 impl Array {
-    pub fn new(headline: String, lines: &mut dyn Iterator<Item=String>) -> Array {
+    pub fn new(headline: String, lines: &mut dyn Iterator<Item=String>) -> Result<Array, Error> {
         let mut values = Vec::<String>::new();
 
         let mut array_has_ended_flag = false;
@@ -33,12 +34,18 @@ impl Array {
             }
         }
 
-        let name_start = headline.chars().position(|c| c == DATATYPE_NAME_SEPARATOR).unwrap() + 1;
-        let name_end = headline.chars().position(|c| c == NAME_VALUE_SEPARATOR).unwrap();
+        let name_start = headline.chars().position(|c| c == DATATYPE_NAME_SEPARATOR)
+            .ok_or_else(|| Error::MalformedArrayHeader(headline.clone()))? + 1;
+        let name_end = headline.chars().position(|c| c == NAME_VALUE_SEPARATOR)
+            .ok_or_else(|| Error::MalformedArrayHeader(headline.clone()))?;
+        if name_end < name_start {
+            return Err(Error::MalformedArrayHeader(headline.clone()));
+        }
         let name = headline[name_start..name_end].trim().to_string();
-        let datatype = headline.chars().nth(0).unwrap().to_string();
+        let datatype = headline.chars().nth(0)
+            .ok_or_else(|| Error::MalformedArrayHeader(headline.clone()))?.to_string();
 
-        Array { name, datatype, values }
+        Ok(Array { name, datatype, values })
     }
 
     pub(crate) fn export(&self, s: &mut String, indent: usize) {

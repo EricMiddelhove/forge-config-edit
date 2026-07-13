@@ -37,7 +37,8 @@ impl Tree {
           tree.tree_map.push(ConfigNode::ValuePair(ValuePair::try_new(raw.trim_start())?));
         },
         LineTypes::TreeStart => {
-          let name_end = line.chars().position(|c| c == SUBTREE_START_MARKER).unwrap();
+          let name_end = line.chars().position(|c| c == SUBTREE_START_MARKER)
+              .ok_or_else(|| Error::MissingSubtreeStart(line.to_string()))?;
           let name = line[..name_end].trim();
           tree.tree_map.push(ConfigNode::Tree(Box::new(Tree::new(name.to_string(), lines)?)));
         },
@@ -51,7 +52,7 @@ impl Tree {
           tree.tree_map.push(ConfigNode::Comment(Comment::new(raw.trim_start())));
         },
         LineTypes::ArrayStart => {
-          tree.tree_map.push(ConfigNode::Array(Array::new(line.to_string(), lines)));
+          tree.tree_map.push(ConfigNode::Array(Array::new(line.to_string(), lines)?));
         },
         LineTypes::ArrayEnd => {},
         LineTypes::Unknown => {
@@ -175,8 +176,157 @@ impl PartialEq for Tree {
 mod tests {
   use crate::config_file::value_tree::array::Array;
   use crate::config_file::value_tree::config_node::ConfigNode;
+  use crate::config_file::value_tree::get_error::GetError;
+  use crate::config_file::value_tree::set_error::SetError;
   use crate::config_file::value_tree::tree::Tree;
   use crate::config_file::value_tree::value_pair::ValuePair;
+
+  #[test]
+  fn test_find_returns_value_at_flat_path() {
+    let content = "S:host=localhost\nI:port=25565".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    let node = tree.find(&["host"]).unwrap();
+    assert_eq!(node.value(), Some("localhost"));
+  }
+
+  #[test]
+  fn test_find_returns_value_at_nested_path() {
+    let content = "server {\n    S:host=localhost\n}".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    let node = tree.find(&["server", "host"]).unwrap();
+    assert_eq!(node.value(), Some("localhost"));
+  }
+
+  #[test]
+  fn test_find_returns_error_for_missing_key() {
+    let content = "S:host=localhost".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    let result = tree.find(&["nonexistent"]);
+    assert!(matches!(result, Err(GetError::NotFound(_))));
+  }
+
+  #[test]
+  fn test_find_returns_error_when_navigating_through_a_value() {
+    let content = "S:host=localhost".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    let result = tree.find(&["host", "deeper"]);
+    assert!(matches!(result, Err(GetError::NotASection(_))));
+  }
+
+  #[test]
+  fn test_set_modifies_value_at_nested_path() {
+    let content = "server {\n    B:enabled=true\n}".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let mut tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    tree.set(&["server", "enabled"], "false").unwrap();
+
+    let node = tree.find(&["server", "enabled"]).unwrap();
+    assert_eq!(node.value(), Some("false"));
+  }
+
+  #[test]
+  fn test_set_returns_error_when_path_is_a_section() {
+    let content = "server {\n    B:enabled=true\n}".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let mut tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    let result = tree.set(&["server"], "false");
+    assert!(matches!(result, Err(SetError::IsSection(_))));
+  }
+
+  #[test]
+  fn test_set_does_not_affect_sibling_keys() {
+    let content = "server {\n    B:enabled=true\n    I:port=25565\n}".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let mut tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    tree.set(&["server", "enabled"], "false").unwrap();
+
+    let port = tree.find(&["server", "port"]).unwrap();
+    assert_eq!(port.value(), Some("25565"));
+  }
+
+  #[test]
+  fn test_type_name_returns_correct_type_for_each_datatype() {
+    let content = "B:flag=true\nS:name=hello\nI:count=5\nD:ratio=0.5\nL:big=9999\nC:letter=x".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    assert_eq!(tree.find(&["flag"]).unwrap().type_name(),   "bool");
+    assert_eq!(tree.find(&["name"]).unwrap().type_name(),   "string");
+    assert_eq!(tree.find(&["count"]).unwrap().type_name(),  "int");
+    assert_eq!(tree.find(&["ratio"]).unwrap().type_name(),  "double");
+    assert_eq!(tree.find(&["big"]).unwrap().type_name(),    "long");
+    assert_eq!(tree.find(&["letter"]).unwrap().type_name(), "char");
+  }
+
+  #[test]
+  fn test_type_name_returns_subtree_and_array_types() {
+    let content = "server {\n    B:enabled=true\n}\nS:tags <\n    survival\n    creative\n >".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    assert_eq!(tree.find(&["server"]).unwrap().type_name(), "subtree");
+    assert_eq!(tree.find(&["tags"]).unwrap().type_name(),   "string[]");
+  }
+
+  #[test]
+  fn test_set_value_appears_correctly_in_export() {
+    let content = "server {\n    B:enabled=true\n}".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let mut tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    tree.set(&["server", "enabled"], "false").unwrap();
+
+    let mut output = String::new();
+    tree.export(&mut output, 0, true);
+    assert!(output.contains("B:enabled=false"));
+    assert!(!output.contains("B:enabled=true"));
+  }
+
+  #[test]
+  fn test_set_returns_error_when_path_is_an_array() {
+    let content = "S:tags <\n    survival\n    creative\n >".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let mut tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    let result = tree.set(&["tags"], "something");
+    assert!(matches!(result, Err(SetError::IsArray(_))));
+  }
+
+  #[test]
+  fn test_round_trip_fidelity_for_example_configs() {
+    for path in ["examples/Avaritia.cfg", "examples/aurora.cfg", "examples/serverutilities.cfg"] {
+      let input = std::fs::read_to_string(path)
+        .unwrap_or_else(|_| panic!("could not read {path}"));
+      let mut lines = input.lines().map(|s| s.to_string());
+      let tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+      let mut output = String::new();
+      tree.export(&mut output, 0, true);
+
+      assert_eq!(input, output, "round-trip failed for {path}");
+    }
+  }
+
+  #[test]
+  fn test_set_returns_error_for_missing_key() {
+    let content = "S:host=localhost".to_string();
+    let mut lines = content.lines().map(|s| s.to_string());
+    let mut tree = Tree::new("root".to_string(), &mut lines).unwrap();
+
+    let result = tree.set(&["nonexistent"], "value");
+    assert!(matches!(result, Err(SetError::NotFound(_))));
+  }
 
   #[test]
   fn test_that_correct_name_is_retrieved() {
